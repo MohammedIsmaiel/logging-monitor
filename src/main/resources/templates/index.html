@@ -11,11 +11,13 @@
         integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 </head>
 
-<body>
-    <div class="container mt-5    " style="height: 100vh;">
+<body class="bg-secondary badge-light">
+    <div class="container mt-5 bg-secondary badge-light" style="height: 100vh;">
         <h3>Logs:</h1>
-            <ul id="messageList" class="list-group list-group-flush">
-                <li class="list-group-item">start</li>
+            <ul id="messageList" class="list-group list-group-flush  bg-secondary text-start badge-light">
+                <!-- <li class="list-group-item">start</li> -->
+                <p class="text-start bg-secondary badge" th:utext="${logEntries.replace('//', '<br/>')}"></p>
+                <!-- <li th:each="entry : ${logEntries}" class="list-group-item" th:text="${entry}"></li> -->
             </ul>
     </div>
 
@@ -38,8 +40,11 @@
                     console.log(message);
                     var messageList = document.getElementById('messageList');
                     var listItem = document.createElement('li');
-                    listItem.classList.add('list-group-item');
-                    listItem.appendChild(document.createTextNode(JSON.parse(message.body).payload));
+                    // listItem.classList.add('list-group-item');
+                    listItem.classList.add('bg-secondary');
+                    listItem.classList.add('text-start');
+                    listItem.classList.add('badge');
+                    listItem.appendChild(document.createTextNode(message.body));
                     messageList.appendChild(listItem);
                 });
             });

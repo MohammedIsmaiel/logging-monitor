@@ -3,6 +3,8 @@ package com.basatatech.loggingmonitor;
 import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -15,28 +17,33 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
-@Slf4j
-public class config {
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+@Log4j2
+public class Config {
     private static final String INBOUND_PATH = "/connects/logs";
 
-    // @Bean(name = "producer")
-    // public ApacheCommonsFileTailingMessageProducer
-    // apacheFileTailingMessageProducer() {
-    // ApacheCommonsFileTailingMessageProducer producer = new
-    // ApacheCommonsFileTailingMessageProducer();
-    // producer.setOutputChannel(fileInputChannel());
-    // producer.setFile(new File(INBOUND_PATH, "test.txt"));
-    // producer.setPollingDelay(2000);
-    // return producer;
-    // }
+    @Autowired
+    private ApplicationContext appCtx;
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Bean(name = "producer")
+    public ApacheCommonsFileTailingMessageProducer apacheFileTailingMessageProducer() {
+        ApacheCommonsFileTailingMessageProducer producer = new ApacheCommonsFileTailingMessageProducer();
+        producer.setAutoStartup(false);
+        producer.setOutputChannel(fileInputChannel());
+        producer.setFile(new File(INBOUND_PATH + "test.txt"));
+        producer.setPollingDelay(2000);
+        return producer;
+    }
 
     @Bean
     public MessageChannel fileInputChannel() {
+
+        DirectChannel directChannel = new DirectChannel();
         return new DirectChannel();
     }
 

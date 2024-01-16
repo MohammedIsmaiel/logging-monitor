@@ -1,52 +1,51 @@
 package com.basatatech.loggingmonitor.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-
-import com.basatatech.loggingmonitor.ProducerBean;
-
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import lombok.AllArgsConstructor;
 
 @Controller
-@Slf4j
+@AllArgsConstructor
 public class TestController {
+    private static final Logger log = LogManager.getLogger(TestController.class);
+    private static String INBOUND_PATH = "/connects/logs/test.txt";
 
-    @Autowired
-    private ApplicationContext appCtx;
+    private ApplicationContext applicationContext;
 
-    // @Autowired
-    // private ApacheCommonsFileTailingMessageProducer producer;
-
-    private static final String INBOUND_PATH = "/connects/logs";
-
-    @GetMapping("/m/{connectName}")
-    public String readLog(@PathVariable String connectName) {
-        ((AnnotationConfigApplicationContext) appCtx).registerBean("apacheCommonsFileTailingMessageProducer",
-                ApacheCommonsFileTailingMessageProducer.class,
-                new ProducerBean().create(new File(INBOUND_PATH, connectName + ".txt")));
+    @GetMapping("/m")
+    public String readLog(Model model, @RequestParam String path) {
+        log.info("--------------------{}-------------------", path);
+        model.addAttribute("logEntries", readLogEntries(INBOUND_PATH));
+        var producer = applicationContext.getBean(ApacheCommonsFileTailingMessageProducer.class);
+        if (producer.isActive())
+            producer.stop();
+        producer.setFile(new File(path));
+        producer.start();
         return "index";
     }
 
-    // @GetMapping("/m/:{connectName}")
-    // public String changeFile(@PathVariable String connectName) {
-    // producer.setFile(new File(INBOUND_PATH, connectName + ".txt"));
-    // return "index";
-    // }
+    private String readLogEntries(String path) {
+        StringBuilder logsStringBuilder = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                logsStringBuilder.append("//" + line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return logsStringBuilder.toString();
+    }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="MyApp" packages="">
+    <Properties>
+        <Property name="LOG_PATH">./connects/logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- <File name="File" fileName="${LOG_PATH}/log.log" immediateFlush="true" append="false">
+            <PatternLayout>
+                <Pattern>%d %p [%t] %c{1.} [%L] - %m%n</Pattern>
+            </PatternLayout>
+        </File> -->
+        <RollingFile name="rootFileLog" fileName="./connects/logs/souhola.log"
+            filePattern="logs/$${date:yyyy-MM}/Connect-%d{yyyy-MM-dd}.log-">
+            <PatternLayout charset="UTF-8">
+                <Pattern>%d %p [%t] %c{1.} [%L] - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+            </Policies>
+        </RollingFile>
+        <!-- You can add more appenders if needed -->
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.basatatech" level="debug" additivity="false">
+            <AppenderRef ref="rootFileLog" />
+        </Logger>
+        <Root level="info">
+            <!-- <AppenderRef ref="File" /> -->
+            <AppenderRef ref="rootFileLog" />
+        </Root>
+
+        <!-- You can add more loggers for specific packages or classes if needed -->
+    </Loggers>
+</Configuration>
