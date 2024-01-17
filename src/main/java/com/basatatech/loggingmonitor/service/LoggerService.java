@@ -71,6 +71,11 @@ public class LoggerService {
         return newSessionLoggerService;
     }
 
+    public static void removeUserSession(String userId) {
+        log.info("remove session for {}", userId);
+        USER_MAP.remove(userId);
+    }
+
     public static List<String> loadLogsNames() {
         List<String> logs = new ArrayList<>();
         File path = new File(basedir);
