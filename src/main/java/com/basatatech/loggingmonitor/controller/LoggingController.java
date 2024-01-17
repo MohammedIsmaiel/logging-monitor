@@ -33,6 +33,7 @@ public class LoggingController {
         log.info("--------------------{}-------------------", name);
         LoggerService loggerService = LoggerService.mapUserSession(userId);
         loggerService.stopWatching();
+        LoggerService.removeUserSession(userId);
         log.info("Return  stopLog()" + name + "-----------------------------");
         return "done";
     }
