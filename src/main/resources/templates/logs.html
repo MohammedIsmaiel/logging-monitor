@@ -17,14 +17,14 @@
             <div id="select">
                 <label for="logName">Choose a log:</label>
                 <select id="logName" name="name">
-                    <option value="a">Log a</option>
-                    <option value="b">Log b</option>
-                    <option value="c">Log c</option>
+                    <option value="" disabled selected>Select a log</option>
+                    <option th:each="logName : ${logNames}" th:value="${logName}" th:text="${logName}"></option>
                 </select>
             </div>
             <button id="submitButton" type="submit" class="btn btn-primary">show logs</button>
-            <a id="homeButton" href="/logs" type="button" disabled class="btn btn-primary">reset</a>
+            <!-- <a id="resetButton" href="/logs" type="button" disabled class="btn btn-primary">reset</a> -->
         </form>
+        <button id="resetButton" href="/logs" type="button" disabled class="btn btn-primary">reset</button>
         <h3>Logs:</h1>
             <ul id="messageList" class="list-group list-group-flush  bg-secondary text-start badge-light">
             </ul>
@@ -37,6 +37,99 @@
         integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
+        var client
+        var webSocket = new SockJS('/websocket');
+        client = Stomp.over(webSocket);
+        const submitButton = document.getElementById('submitButton')
+        const homeButton = document.getElementById('resetButton')
+        const select = document.getElementById('select')
+
+        function generateUserId() {
+            return 'user_' + Math.floor(Math.random() * 1000);
+        }
+        var user_id = generateUserId();
+
+        client.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // Modify the client.subscribe line to include the logName
+            document.getElementById('logForm').addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission behavior
+                homeButton.removeAttribute("disabled")
+                submitButton.setAttribute("disabled", 'true')
+                select.setAttribute('hidden', 'true')
+
+                document.getElementById('messageList').innerHTML = "";
+                var logName = document.getElementById('logName').value;
+
+
+                // Modify the subscription topic
+                console.log("TOPIC: ", '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName));
+                client.subscribe('/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName), function (message) {
+                    console.log(message.body);
+                    var messageList = document.getElementById('messageList');
+                    var listItem = document.createElement('li');
+                    listItem.classList.add('bg-secondary');
+                    listItem.classList.add('text-start');
+                    listItem.classList.add('badge');
+                    listItem.appendChild(document.createTextNode(message.body));
+                    messageList.appendChild(listItem);
+                });
+
+                var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName);
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log('Response:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
+
+        const resetButton = document.getElementById('resetButton');
+        resetButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            var logName = document.getElementById('logName').value;
+            var stopUrl = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName) + '/stop';
+
+            fetch(stopUrl, {
+                method: 'GET'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    console.log('Stop Response:', data);
+                })
+                .catch(error => {
+                    console.error('Error stopping log:', error);
+                });
+
+            select.removeAttribute('hidden');
+
+            location.reload(true);
+            // submitButton.removeAttribute("disabled")
+            // homeButton.setAttribute("disabled", 'true')
+            // select.removeAttribute('hidden');
+            // select.setAttribute('hidden', 'true')
+        });
+
+        function connectSocket() {
+            // Additional socket connection logic if needed
+        }
+    </script>
+    <!-- <script>
         var client
         var webSocket = new SockJS('/websocket');
         client = Stomp.over(webSocket);
@@ -94,7 +187,7 @@
 
         }
 
-    </script>
+    </script> -->
 
 
 
