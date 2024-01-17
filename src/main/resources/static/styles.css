@@ -38,6 +38,7 @@ body {
 }
 
 #credits .moving-bar {
+    padding-top: 20px;
     display: inline-block;
     animation: slide 10s linear infinite;
     /* Adjust the animation duration as needed */
@@ -47,6 +48,6 @@ body {
     /* Set color to green */
     font-size: 18px;
     /* Adjust the font size as needed */
-    text-shadow: 0 0 10px #ff9900, 0 0 20px #ff9900, 0 0 30px #ff9900;
+    text-shadow: 0 0 5px #ff8800, 0 0 10px #ff8800, 0 0 30px #ff8800;
     /* Flame-like text-shadow effect */
 }
