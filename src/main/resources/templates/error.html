@@ -27,6 +27,7 @@
 
         <div id="messageList" class="text-danger col-6 terminal-box mt-4 justify-content-center text-center">
             <h1> This is an empty page </h1>
+            <p th:text="${errorMessage}"></p>
             <h3> Please redirect to the logs home page. </h3>
             <div class="d-grid gap-2">
                 <button class="btn btn-primary" onclick=redirect() type="button">Go to
