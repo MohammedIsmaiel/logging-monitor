@@ -29,9 +29,7 @@ public class GlobalExceptionHandler {
     }
 
     private String createErrorModelAndView(String errorTitle, String errorMessage, Model model) {
-        ModelAndView modelAndView = new ModelAndView("redirect:/logs/error");
-        // modelAndView.addObject("errorTitle", errorTitle);
-        modelAndView.addObject("errorMessage", errorMessage);
+        model.addAttribute("errorMessage", errorMessage);
         return "error";
     }
 }
