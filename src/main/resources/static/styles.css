@@ -1,0 +1,52 @@
+/* styles.css */
+
+body {
+    background-color: #212529;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.terminal-box {
+    height: 70vh;
+    overflow-y: scroll;
+    border: 2px solid #28a745;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+#credits {
+    color: #6c757d;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#credits .moving-bar {
+    display: inline-block;
+    animation: slide 10s linear infinite;
+    /* Adjust the animation duration as needed */
+    font-weight: bold;
+    /* Add bold font weight */
+    color: #28a745;
+    /* Set color to green */
+    font-size: 18px;
+    /* Adjust the font size as needed */
+    text-shadow: 0 0 10px #ff9900, 0 0 20px #ff9900, 0 0 30px #ff9900;
+    /* Flame-like text-shadow effect */
+}
