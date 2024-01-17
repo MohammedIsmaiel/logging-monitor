@@ -43,12 +43,20 @@ public class LoggerService {
         log.info("LoggerService tailFile()");
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
+            StringBuilder builder;
             while (watching) {
+                builder = new StringBuilder();
+                line = null;
                 while ((line = reader.readLine()) != null) {
                     log.info("Received file content: " + line);
-                    simpMessagingTemplate.convertAndSend(this.topic, line);
+                    builder.append(line);
+                    builder.append("\n");
+                    // simpMessagingTemplate.convertAndSend(this.topic, line);
                 }
-                line = null;
+                if (builder.length() > 0) {
+                    simpMessagingTemplate.convertAndSend(this.topic, builder.toString());
+                    log.info("Buffer Sent");
+                }
             }
             log.info("Exit While *************************");
 
