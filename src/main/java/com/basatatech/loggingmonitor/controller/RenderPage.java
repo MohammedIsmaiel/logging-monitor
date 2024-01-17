@@ -26,6 +26,11 @@ public class RenderPage {
         return "logs";
     }
 
+    @GetMapping("/logs/error")
+    public String showErrorPage(Model model) {
+        return "error";
+    }
+
     @GetMapping("/logs/{userId}/logout")
     public String getMethodName(@PathVariable String userId) {
         LoggerService.removeUserSession(userId);

@@ -42,8 +42,6 @@
         </div>
         <div id="messageList" style="color: rgb(50, 212, 50);" class=" col-11 terminal-box mt-4">
             <p class="m-0">Start</p>
-            <p class="m-0">Start</p>
-            <p class="m-0">Start</p>
         </div>
     </div>
 
@@ -109,6 +107,7 @@
                     .catch(error => {
                         console.error('Error:', error);
                     });
+                messageList.scrollTop = logContainer.scrollHeight;
             });
         });
 
