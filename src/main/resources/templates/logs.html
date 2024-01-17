@@ -29,13 +29,9 @@
             <button id="logoutButton" onclick=logout() type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
         <div id="messageList" style="color: rgb(50, 212, 50);" class=" col-11 terminal-box mt-4">
-            <p class="m-0">Select Log first to display</p>
-        </div>
-
-        <div id="credits" class="mt-4 text-center">
-            Powered by A.G.I
-            <br>
-            <span class="moving-bar"> AbdAlhafieez , Gebali , Ismaieel </span>
+            <p class="m-0">Start</p>
+            <p class="m-0">Start</p>
+            <p class="m-0">Start</p>
         </div>
     </div>
 
@@ -59,7 +55,7 @@
         var user_id = generateUserId();
 
         function logout() {
-            var logoutUrl = '/logout/' + user_id;
+            var logoutUrl = '/logs/' + user_id + '/logout';
             window.location.href = logoutUrl;
         }
 
@@ -103,6 +99,7 @@
                     .catch(error => {
                         console.error('Error:', error);
                     });
+                messageList.scrollTop = logContainer.scrollHeight;
             });
         });
 
