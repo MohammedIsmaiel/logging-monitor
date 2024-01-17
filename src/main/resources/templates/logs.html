@@ -15,41 +15,28 @@
     <div class="container  row my-3 bg-dark badge-light justify-content-center">
         <form id="logForm" class="col-4 justify-content-center">
             <div class="input-group">
-                <button id="submitButton" class="btn btn-outline-primary" type="submit">Show logs</button>
+                <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
                 <select class="form-select" id="logName" aria-label="Example select with button addon">
                     <option selected>Choose a connect to show logs...</option>
-                    <option value="1">One</option>
+                    <!-- <option value="1">One</option>
                     <option value="2">Two</option>
-                    <option value="3">Three</option>
+                    <option value="3">Three</option> -->
                     <option th:each="logName : ${logNames}" th:value="${logName}" th:text="${logName}"></option>
                 </select>
             </div>
-            <!-- <div id="select">
-                <label for="logName">Choose a log:</label>
-                <select id="logName" name="name">
-                    <option value="" disabled selected>Select a log</option>
-                    <option th:each="logName : ${logNames}" th:value="${logName}" th:text="${logName}"></option>
-                </select>
-            </div> -->
+
         </form>
         <div class="col-4 justify-content-center">
-            <button id="resetButton" onclick=reset() href="/logs" type="button"
-                class="mx-1 btn btn-danger">reset</button>
+            <button id="resetButton" type="button" disabled class="mx-1 btn btn-danger">reset</button>
             <button id="logoutButton" onclick=logout() type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
         <div class="row justify-content-center">
             <h4 class="text-light my-3">Logs:</h4>
         </div>
-        <div id="messageList" class="row justify-content-center text-center my-3 mx-3 border border-primary">
-            <div class="text-primary">This is default primary text</div>
-            <div class="text-primary text-opacity-75">This is 75% opacity primary text</div>
-            <div class="text-primary text-opacity-50">This is 50% opacity primary text</div>
-            <div class="text-primary text-opacity-25">This is 25% opacity primary text</div>
-            <div class="text-light">This is default primary text</div>
-            <div class="" style="color: rgb(50, 212, 50);">This is default primary text</div>
-
-            <!-- <ul id="messageList" class="list-group list-group-flush  bg-dark text-start badge-light">
-            </ul> -->
+        <div id="messageList " style="color: rgb(50, 212, 50);"
+            class="row justify-content-start col-10 border border-primary my-3 mx-3">
+            <p class="m-0">Start</p>
+            <!-- <p class="m-0">This is default primary text</p> -->
         </div>
     </div>
 
@@ -64,52 +51,42 @@
         var webSocket = new SockJS('/websocket');
         client = Stomp.over(webSocket);
         const submitButton = document.getElementById('submitButton')
-        const homeButton = document.getElementById('resetButton')
+        const resetButton = document.getElementById('resetButton')
         const logName = document.getElementById('logName')
-
+        const messageList = document.getElementById('messageList');
         function generateUserId() {
             return 'user_' + Math.floor(Math.random() * 1000);
         }
-
-        function logout() {
-            var logoutUrl = 'http://localhost:8080/logout';
-            window.location.href = logoutUrl;
-        }
-
-        function reset() {
-            var resetUrl = 'http://localhost:8080/logs';
-            window.location.href = resetUrl;
-        }
         var user_id = generateUserId();
 
+        function logout() {
+            var logoutUrl = '/logout/' + user_id;
+            window.location.href = logoutUrl;
+        }
         client.connect({}, function (frame) {
             console.log('Connected: ' + frame);
 
             // Modify the client.subscribe line to include the logName
             document.getElementById('logForm').addEventListener('submit', function (event) {
                 event.preventDefault(); // Prevent the default form submission behavior
-                homeButton.removeAttribute("disabled")
-                submitButton.setAttribute("disabled", 'true')
-                logName.setAttribute('hidden', 'true')
-
-                document.getElementById('messageList').innerHTML = "";
-                var logName = document.getElementById('logName').value;
-
-
+                resetButton.removeAttribute("disabled");
+                submitButton.setAttribute("disabled", 'true');
+                logName.setAttribute('disabled', 'true');
+                messageList.innerHTML = "";
+                var logNameValue = document.getElementById('logName').value;
                 // Modify the subscription topic
-                console.log("TOPIC: ", '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName));
-                client.subscribe('/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName), function (message) {
+                console.log("TOPIC: ", '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue));
+                client.subscribe('/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue), function (message) {
                     console.log(message.body);
-                    var messageList = document.getElementById('messageList');
+                    // var messageList = document.getElementById('messageList');
                     // var listItem = document.createElement('li');
-                    var listItem = document.createElement('div');
-                    listItem.classList.add('text-primary');
-                    listItem.appendChild(document.createTextNode(message.body));
-                    messageList.appendChild(listItem);
+                    // var div = '<p class="" >' + message.body + '</p>'
+                    var item = document.createElement('p');
+                    item.appendChild(document.createTextNode(message.body));
+                    item.classList.add('m-0')
+                    messageList.appendChild(item);
                 });
-
-                var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName);
-
+                var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
@@ -125,13 +102,10 @@
                     });
             });
         });
-
-        const resetButton = document.getElementById('resetButton');
         resetButton.addEventListener('click', function (event) {
             event.preventDefault();
-            var logName = document.getElementById('logName').value;
-            var stopUrl = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logName) + '/stop';
-
+            var logNameValue = document.getElementById('logName').value;
+            var stopUrl = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue) + '/stop';
             fetch(stopUrl, {
                 method: 'GET'
             })
@@ -148,7 +122,7 @@
                     console.error('Error stopping log:', error);
                 });
 
-            logName.removeAttribute('hidden');
+            // logName.removeAttribute('hidden');
 
             location.reload(true);
             // submitButton.removeAttribute("disabled")
@@ -161,66 +135,6 @@
             // Additional socket connection logic if needed
         }
     </script>
-    <!-- <script>
-        var client
-        var webSocket = new SockJS('/websocket');
-        client = Stomp.over(webSocket);
-        const submitButton = document.getElementById('submitButton')
-        const homeButton = document.getElementById('homeButton')
-        const select = document.getElementById('select')
-
-        client.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            client.subscribe('/topic/messages', function (message) {
-                console.log(message.body);
-                var messageList = document.getElementById('messageList');
-                var listItem = document.createElement('li');
-                // listItem.classList.add('list-group-item');
-                listItem.classList.add('bg-secondary');
-                listItem.classList.add('text-start');
-                listItem.classList.add('badge');
-                listItem.appendChild(document.createTextNode(message.body));
-                messageList.appendChild(listItem);
-            });
-        });
-
-        document.getElementById('logForm').addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the default form submission behavior
-            // homeButton.setAttribute("disabled", 'false')
-            homeButton.removeAttribute("disabled")
-            submitButton.setAttribute("disabled", 'true')
-            select.setAttribute('hidden', 'true')
-
-            document.getElementById('messageList').innerHTML = "";
-            // Get the selected log name from the dropdown
-            var logName = document.getElementById('logName').value;
-
-            // Build the URL for the GET request
-            var url = '/logs/' + encodeURIComponent(logName);
-
-            // Use the Fetch API to send a GET request
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    // Handle the response data as needed
-                    console.log('Response:', data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        });
-
-        function connectSocket() {
-
-        }
-
-    </script> -->
-
 
 
 </body>
