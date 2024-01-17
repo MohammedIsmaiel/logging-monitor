@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoggerService {
-    private static final String basedir = "/home/abdelhafeezahmed/logs/";
+    private static final String basedir = "/home/srvadmin/APP/logs/";
     private String filePath;
     private String topic = "/topic/messages";
     private SimpMessagingTemplate simpMessagingTemplate;

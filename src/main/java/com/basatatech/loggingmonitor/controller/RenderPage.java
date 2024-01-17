@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.basatatech.loggingmonitor.exception.NoAvailableLogsException;
 import com.basatatech.loggingmonitor.service.LoggerService;
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @Slf4j
 public class RenderPage {
-    @GetMapping("/logs")
+    @GetMapping({ "/", "/logs" })
     public String readLog(Model model) {
         log.info("-- ---------- RenderPage ----------------- --");
         // Assume you have a service method that returns a list of log names
@@ -28,8 +29,10 @@ public class RenderPage {
     }
 
     @GetMapping("/logs/error")
-    public String showErrorPage(Model model) {
-        return "error";
+    public ModelAndView showErrorPage(Model model) {
+        ModelAndView modelAndView = new ModelAndView("error");
+        modelAndView.addObject("errorMessage", "Sorry, the page you are looking for is not found.");
+        return modelAndView;
     }
 
     @GetMapping("/logs/{userId}/logout")

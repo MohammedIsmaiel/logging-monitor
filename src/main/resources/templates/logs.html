@@ -9,16 +9,7 @@
     <title>Logs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <style>
-        .terminal-box {
-            height: 70vh;
-            overflow-y: auto;
-            border: 2px solid #28a745;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="bg-dark badge-light justify-content-center row">
@@ -37,11 +28,14 @@
             <button id="resetButton" type="button" disabled class="mx-1 my-1 btn btn-danger">reset</button>
             <button id="logoutButton" onclick=logout() type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
-        <div class="row justify-content-center mx-3">
-            <h5 class="text-light my-3">Logs:</h5>
-        </div>
         <div id="messageList" style="color: rgb(50, 212, 50);" class=" col-11 terminal-box mt-4">
-            <p class="m-0">Start</p>
+            <p class="m-0">Select Log first to display</p>
+        </div>
+
+        <div id="credits" class="mt-4 text-center">
+            Powered by A.G.I
+            <br>
+            <span class="moving-bar"> AbdAlhafieez , Gebali , Ismaieel </span>
         </div>
     </div>
 
@@ -92,6 +86,8 @@
                     item.appendChild(document.createTextNode(message.body));
                     item.classList.add('m-0');
                     messageList.appendChild(item);
+                    messageList.scrollTop = messageList.scrollHeight;
+
                 });
                 var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
                 fetch(url)
