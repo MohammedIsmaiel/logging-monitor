@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.basatatech.loggingmonitor.exception.NoAvailableLogsException;
 import com.basatatech.loggingmonitor.service.LoggerService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ public class RenderPage {
         // Assume you have a service method that returns a list of log names
         List<String> logNames = getLogNamesFromService();
         if (logNames == null || logNames.isEmpty()) {
-
+            throw new NoAvailableLogsException("No Available Logs");
         }
         model.addAttribute("logNames", logNames);
         return "logs";
