@@ -33,9 +33,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    // public static void main(String[] args) {
-    // BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
-    // System.out.println(pe.encode("1234"));
-    // }
 }
