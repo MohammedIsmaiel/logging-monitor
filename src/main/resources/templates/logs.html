@@ -20,7 +20,9 @@
                 <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
                 <select class="form-select " id="logName" aria-label="Example select with button addon">
                     <option selected>Choose a connect to show logs...</option>
-                    <option th:each="logName : ${logNames}" th:value="${logName}" th:text="${logName}"></option>
+                    <!-- Modify the th:each loop to sort log names alphabetically -->
+                    <option th:each="logName : ${logNames.stream().sorted().toList()}" th:value="${logName}"
+                        th:text="${logName}"></option>
                 </select>
             </div>
 
