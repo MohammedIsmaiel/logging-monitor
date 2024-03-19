@@ -19,10 +19,9 @@ public class RenderPage {
     @GetMapping({ "/", "/logs" })
     public String readLog(Model model) {
         log.info("-- ---------- RenderPage ----------------- --");
-        // Assume you have a service method that returns a list of log names
-        List<String> logNames = getLogNamesFromService();
+        List<String> logNames = LoggerService.loadLogsNames();
         if (logNames == null || logNames.isEmpty()) {
-            throw new NoAvailableLogsException("No Available Logs");
+            throw new NoAvailableLogsException("No Available Logs to show...");
         }
         model.addAttribute("logNames", logNames);
         return "logs";
@@ -39,9 +38,5 @@ public class RenderPage {
     public String getMethodName(@PathVariable String userId) {
         LoggerService.removeUserSession(userId);
         return "redirect:/logout";
-    }
-
-    private List<String> getLogNamesFromService() {
-        return LoggerService.loadLogsNames();
     }
 }

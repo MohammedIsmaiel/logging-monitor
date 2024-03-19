@@ -1,4 +1,4 @@
-package com.basatatech.loggingmonitor;
+package com.basatatech.loggingmonitor.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

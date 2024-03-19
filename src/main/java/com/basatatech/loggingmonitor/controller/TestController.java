@@ -20,7 +20,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class TestController {
     private static final Logger log = LogManager.getLogger(TestController.class);
-    private static String INBOUND_PATH = "/connects/logs/test.txt";
+    private static final String INBOUND_PATH = "/connects/logs/test.txt";
 
     private ApplicationContext applicationContext;
 
