@@ -90,21 +90,55 @@ public class LoggerService {
         File path = new File(LOGS_DIR);
         if (!path.exists() || !path.isDirectory())
             return Collections.emptyList();
-        File[] logFiles = path.listFiles(new LogsFileFilterName());
-        String fileName;
-        for (File file : logFiles) {
-            fileName = file.getName();
-            int lastDotIndex = fileName.lastIndexOf(".");
-            logs.add(fileName.substring(0, lastDotIndex));
-        }
+        loadLogsRecursively(path, logs);
         return logs;
+    }
+
+    private static void loadLogsRecursively(File dir, List<String> logs) {
+        File[] logFiles = dir.listFiles(new LogsFileFilterName());
+        if (logFiles != null) {
+            for (File file : logFiles) {
+                if (file.isDirectory()) {
+                    loadLogsRecursively(file, logs);
+                } else {
+                    String fileName = file.getName();
+                    int lastDotIndex = fileName.lastIndexOf(".");
+                    if (lastDotIndex != -1) {
+                        logs.add(fileName.substring(0, lastDotIndex));
+                    }
+                }
+            }
+        }
     }
 
     private static class LogsFileFilterName implements FilenameFilter {
         @Override
         public boolean accept(File dir, String name) {
-            return name.endsWith(".log");
+            File file = new File(dir, name);
+            return file.isDirectory() || name.endsWith(".log");
         }
     }
+
+    // public static List<String> loadLogsNames() {
+    // List<String> logs = new ArrayList<>();
+    // File path = new File(LOGS_DIR);
+    // if (!path.exists() || !path.isDirectory())
+    // return Collections.emptyList();
+    // File[] logFiles = path.listFiles(new LogsFileFilterName());
+    // String fileName;
+    // for (File file : logFiles) {
+    // fileName = file.getName();
+    // int lastDotIndex = fileName.lastIndexOf(".");
+    // logs.add(fileName.substring(0, lastDotIndex));
+    // }
+    // return logs;
+    // }
+
+    // private static class LogsFileFilterName implements FilenameFilter {
+    // @Override
+    // public boolean accept(File dir, String name) {
+    // return name.endsWith(".log");
+    // }
+    // }
 
 }
