@@ -36,14 +36,12 @@
         <div id="messageList" style="color: rgb(50, 212, 50);" class="col-11 terminal-box mt-4">
             <p class="m-0">Select Log first to display</p>
         </div>
-
         <div id="credits" class="mt-4 text-center">
             Powered by A.G.I
             <br>
             <span class="moving-bar"> AbdAlhafieez , Gebali , Ismaieel </span>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"
         integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -113,6 +111,9 @@
                 messageList = document.getElementById('messageList');
                 var logNameValue = document.getElementById('logName').value;
                 var archiveNameValue = document.getElementById('archiveName').value;
+                if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
+                    archiveNameValue = archiveNameValue.replace('.gz', ''); // Remove .gz extension
+                }
                 var topicPath = '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
                 if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
                     topicPath += '/' + encodeURIComponent(archiveNameValue);
