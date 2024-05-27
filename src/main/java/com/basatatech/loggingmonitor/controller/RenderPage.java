@@ -2,13 +2,12 @@ package com.basatatech.loggingmonitor.controller;
 
 import java.util.List;
 import java.util.Collections;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.basatatech.loggingmonitor.exception.NoAvailableLogsException;
@@ -16,7 +15,7 @@ import com.basatatech.loggingmonitor.service.LoggerService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@RestController
+@Controller
 @Slf4j
 public class RenderPage {
     @GetMapping({ "/", "/logs" })
@@ -42,6 +41,13 @@ public class RenderPage {
         LoggerService.removeUserSession(userId);
         return "redirect:/logout";
     }
+
+    // @GetMapping("/logs/{logName}/archives")
+    // public String getLogArchives(@PathVariable String logName, Model model) {
+    // List<String> archiveNames = LoggerService.loadArchiveNames(logName);
+    // model.addAttribute("archiveNames", archiveNames);
+    // return "fragments :: archivesDropdown";
+    // }
 
     @GetMapping("/logs/{logName}/archives")
     public ResponseEntity<List<String>> getLogArchives(@PathVariable String logName) {
