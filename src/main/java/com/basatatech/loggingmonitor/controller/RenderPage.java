@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.basatatech.loggingmonitor.exception.NoAvailableLogsException;
@@ -13,7 +15,7 @@ import com.basatatech.loggingmonitor.service.LoggerService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Controller
+@RestController
 @Slf4j
 public class RenderPage {
     @GetMapping({ "/", "/logs" })
@@ -41,9 +43,7 @@ public class RenderPage {
     }
 
     @GetMapping("/logs/{logName}/archives")
-    public String getLogArchives(@PathVariable String logName, Model model) {
-        List<String> archiveNames = LoggerService.loadArchiveNames(logName);
-        model.addAttribute("archiveNames", archiveNames);
-        return "fragments :: archivesDropdown";
+    public List<String> getLogArchives(@PathVariable String logName) {
+        return LoggerService.loadArchiveNames(logName);
     }
 }
