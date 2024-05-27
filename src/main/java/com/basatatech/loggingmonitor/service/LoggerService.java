@@ -24,6 +24,8 @@ public class LoggerService {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     private static final Map<String, LoggerService> USER_MAP = new HashMap<>();
+    private static final Map<String, String> LOG_PATH_MAP = new HashMap<>();
+    private static final Map<String, List<String>> ARCHIVE_PATH_MAP = new HashMap<>();
 
     private boolean watching = false;
 
@@ -31,25 +33,11 @@ public class LoggerService {
         // document why this constructor is empty
     }
 
-    // public void init(String name, SimpMessagingTemplate simpMessagingTemplate,
-    // String userId) {
-    // log.info("LoggerService init()");
-    // this.simpMessagingTemplate = simpMessagingTemplate;
-    // this.filePath = new
-    // StringBuilder().append(LOGS_DIR).append(name).append(".log").toString();
-    // this.topic = new
-    // StringBuilder().append(this.topic).append("/").append(userId).append("/").append(name)
-    // .toString();
-    // this.watching = true;
-    // System.out.println("TOPIC: " + this.topic);
-    // }
-
-    public void init(String filePath, SimpMessagingTemplate simpMessagingTemplate, String userId) {
+    public void init(String logPath, SimpMessagingTemplate simpMessagingTemplate, String userId) {
         log.info("LoggerService init()");
         this.simpMessagingTemplate = simpMessagingTemplate;
-        this.filePath = filePath;
-        this.topic = new StringBuilder().append(this.topic).append("/").append(userId).append("/").append(
-                filePath).toString();
+        this.filePath = logPath;
+        this.topic = this.topic + "/" + userId + "/" + new File(logPath).getName();
         this.watching = true;
         System.out.println("TOPIC: " + this.topic);
     }
@@ -98,6 +86,22 @@ public class LoggerService {
         USER_MAP.remove(userId);
     }
 
+    public static void storeLogPath(String logName, String logPath) {
+        LOG_PATH_MAP.put(logName, logPath);
+    }
+
+    public static String getLogPath(String logName) {
+        return LOG_PATH_MAP.get(logName);
+    }
+
+    public static void storeArchivePaths(String logName, List<String> archivePaths) {
+        ARCHIVE_PATH_MAP.put(logName, archivePaths);
+    }
+
+    public static List<String> getArchivePaths(String logName) {
+        return ARCHIVE_PATH_MAP.getOrDefault(logName, Collections.emptyList());
+    }
+
     public static List<String> loadLogsNames() {
         List<String> logs = new ArrayList<>();
         File path = new File(LOGS_DIR);
@@ -112,15 +116,46 @@ public class LoggerService {
         return logs;
     }
 
+    private static void loadLogsFromSubDir(File dir, List<String> logs) {
+        File[] logFiles = dir.listFiles(new LogsFileFilterName());
+        if (logFiles != null) {
+            for (File file : logFiles) {
+                if (file.isDirectory()) {
+                    loadLogsFromSubDir(file, logs);
+                } else {
+                    String fileName = file.getName();
+                    int lastDotIndex = fileName.lastIndexOf(".");
+                    if (lastDotIndex != -1) {
+                        String logName = fileName.substring(0, lastDotIndex);
+                        logs.add(logName);
+                        storeLogPath(logName, file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+    private static class LogsFileFilterName implements FilenameFilter {
+        @Override
+        public boolean accept(File dir, String name) {
+            File file = new File(dir, name);
+            return file.isDirectory() || name.endsWith(".log");
+        }
+    }
+
     public static List<String> loadArchiveNames(String logName) {
         List<String> archives = new ArrayList<>();
-        File logDir = new File(LOGS_DIR + logName);
-        try {
-            if (logDir.exists() && logDir.isDirectory()) {
-                loadArchivesFromDir(logDir, archives);
+        String logDirPath = LOG_PATH_MAP.get(logName);
+        if (logDirPath != null) {
+            File logDir = new File(logDirPath).getParentFile();
+            try {
+                if (logDir.exists() && logDir.isDirectory()) {
+                    loadArchivesFromDir(logDir, archives);
+                    storeArchivePaths(logName, archives);
+                }
+            } catch (Exception e) {
+                log.error("Error loading archive names for log: " + logName, e);
             }
-        } catch (Exception e) {
-            log.error("Error loading archive names for log: " + logName, e);
         }
         return archives;
     }
@@ -137,52 +172,4 @@ public class LoggerService {
             }
         }
     }
-
-    private static void loadLogsFromSubDir(File dir, List<String> logs) {
-        File[] logFiles = dir.listFiles(new LogsFileFilterName());
-        if (logFiles != null) {
-            for (File file : logFiles) {
-                if (file.isDirectory()) {
-                    loadLogsFromSubDir(file, logs);
-                } else {
-                    String fileName = file.getName();
-                    int lastDotIndex = fileName.lastIndexOf(".");
-                    if (lastDotIndex != -1) {
-                        logs.add(fileName.substring(0, lastDotIndex));
-                    }
-                }
-            }
-        }
-    }
-
-    private static class LogsFileFilterName implements FilenameFilter {
-        @Override
-        public boolean accept(File dir, String name) {
-            File file = new File(dir, name);
-            return file.isDirectory() || name.endsWith(".log");
-        }
-    }
-
-    // public static List<String> loadLogsNames() {
-    // List<String> logs = new ArrayList<>();
-    // File path = new File(LOGS_DIR);
-    // if (!path.exists() || !path.isDirectory())
-    // return Collections.emptyList();
-    // File[] logFiles = path.listFiles(new LogsFileFilterName());
-    // String fileName;
-    // for (File file : logFiles) {
-    // fileName = file.getName();
-    // int lastDotIndex = fileName.lastIndexOf(".");
-    // logs.add(fileName.substring(0, lastDotIndex));
-    // }
-    // return logs;
-    // }
-
-    // private static class LogsFileFilterName implements FilenameFilter {
-    // @Override
-    // public boolean accept(File dir, String name) {
-    // return name.endsWith(".log");
-    // }
-    // }
-
 }

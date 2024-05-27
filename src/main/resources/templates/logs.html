@@ -17,16 +17,15 @@
         <form id="logForm" class="col-4 justify-content-center my-1">
             <div class="input-group">
                 <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
-                <select class="form-select" id="logName" aria-label="Example select with button addon">
+                <select class="form-select" id="logName" aria-label="Example select with button addon"
+                    onchange="loadArchives()">
                     <option selected>Choose a log to show...</option>
-                    <option th:each="logPath : ${logNames.stream().sorted().toList()}" th:value="${logPath}"
-                        th:text="${logPath}"></option>
+                    <option th:each="logName : ${logNames.stream().sorted().toList()}" th:value="${logName}"
+                        th:text="${logName}"></option>
                 </select>
-            </div>
-            <div id="archiveSelect" style="display: none;">
-                <select class="form-select" id="archiveName" aria-label="Select archive">
+                <select class="form-select" id="archiveName" aria-label="Example select with button addon"
+                    style="display: none;">
                     <option selected>Choose an archive...</option>
-                    <option th:each="archive : ${archives}" th:value="${archive}" th:text="${archive}"></option>
                 </select>
             </div>
         </form>
@@ -37,12 +36,14 @@
         <div id="messageList" style="color: rgb(50, 212, 50);" class="col-11 terminal-box mt-4">
             <p class="m-0">Select Log first to display</p>
         </div>
+
         <div id="credits" class="mt-4 text-center">
             Powered by A.G.I
             <br>
             <span class="moving-bar"> AbdAlhafieez , Gebali , Ismaieel </span>
         </div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"
         integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -73,12 +74,7 @@
             var logNameValue = logName.value;
             if (logNameValue !== 'Choose a log to show...') {
                 fetch('/logs/' + encodeURIComponent(logNameValue) + '/archives')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.statusText);
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.length > 0) {
                             archiveName.style.display = 'block';
@@ -112,15 +108,10 @@
                 messageList = document.getElementById('messageList');
                 var logNameValue = document.getElementById('logName').value;
                 var archiveNameValue = document.getElementById('archiveName').value;
-                var logPath = logNameValue;
-
+                var topicPath = '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
                 if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
-                    logPath += '/' + archiveNameValue;
+                    topicPath += '/' + encodeURIComponent(archiveNameValue);
                 }
-
-                var topicPath = '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logPath);
-                var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logPath);
-
                 client.subscribe(topicPath, function (message) {
                     console.log(message.body);
                     var item = document.createElement('p');
@@ -128,7 +119,10 @@
                     item.classList.add('m-0');
                     messageList.appendChild(item);
                 });
-
+                var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
+                if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
+                    url += '/' + encodeURIComponent(archiveNameValue);
+                }
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
@@ -143,7 +137,6 @@
                         console.error('Error:', error);
                     });
             });
-
         });
 
         resetButton.addEventListener('click', function (event) {

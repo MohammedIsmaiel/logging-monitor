@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 import com.basatatech.loggingmonitor.service.LoggerService;
-
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,22 +29,19 @@ public class LoggingController {
     // return "done";
     // }
 
-    @GetMapping("/logs/{userId}/{logPath}")
-    public String readLog(@PathVariable String userId, @PathVariable String logPath) {
+    @GetMapping("/logs/{userId}/{name}")
+    public String readLog(@PathVariable String userId, @PathVariable String name) {
+        log.info("--------------------{}-------------------", name);
         LoggerService loggerService = LoggerService.mapUserSession(userId);
-        loggerService.init(logPath, simpMessagingTemplate, userId);
-        loggerService.tailFile();
-        log.info("Return  readLog()" + logPath + "-----------------------------");
-        return "done";
-    }
-
-    @GetMapping("/logs/{userId}/{logPath}/**")
-    public String readLog(@PathVariable String userId, @PathVariable String logPath, HttpServletRequest request) {
-        String fullLogPath = request.getRequestURI().split("/logs/" + userId + "/")[1];
-        LoggerService loggerService = LoggerService.mapUserSession(userId);
-        loggerService.init(fullLogPath, simpMessagingTemplate, userId);
-        loggerService.tailFile();
-        return "done";
+        String logPath = LoggerService.getLogPath(name);
+        if (logPath != null) {
+            loggerService.init(logPath, simpMessagingTemplate, userId);
+            loggerService.tailFile();
+            log.info("Return  readLog() " + name + "-----------------------------");
+            return "done";
+        } else {
+            return "Log path not found";
+        }
     }
 
     @GetMapping("/logs/{userId}/{name}/stop")
