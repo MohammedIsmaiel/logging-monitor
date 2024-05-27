@@ -31,12 +31,25 @@ public class LoggerService {
         // document why this constructor is empty
     }
 
-    public void init(String name, SimpMessagingTemplate simpMessagingTemplate, String userId) {
+    // public void init(String name, SimpMessagingTemplate simpMessagingTemplate,
+    // String userId) {
+    // log.info("LoggerService init()");
+    // this.simpMessagingTemplate = simpMessagingTemplate;
+    // this.filePath = new
+    // StringBuilder().append(LOGS_DIR).append(name).append(".log").toString();
+    // this.topic = new
+    // StringBuilder().append(this.topic).append("/").append(userId).append("/").append(name)
+    // .toString();
+    // this.watching = true;
+    // System.out.println("TOPIC: " + this.topic);
+    // }
+
+    public void init(String filePath, SimpMessagingTemplate simpMessagingTemplate, String userId) {
         log.info("LoggerService init()");
         this.simpMessagingTemplate = simpMessagingTemplate;
-        this.filePath = new StringBuilder().append(LOGS_DIR).append(name).append(".log").toString();
-        this.topic = new StringBuilder().append(this.topic).append("/").append(userId).append("/").append(name)
-                .toString();
+        this.filePath = filePath;
+        this.topic = new StringBuilder().append(this.topic).append("/").append(userId).append("/").append(
+                filePath).toString();
         this.watching = true;
         System.out.println("TOPIC: " + this.topic);
     }
