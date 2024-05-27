@@ -4,9 +4,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
+
 import com.basatatech.loggingmonitor.service.LoggerService;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,10 +22,11 @@ public class LoggingController {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     @GetMapping("/logs/{userId}/{name}")
-    public String readLog(@PathVariable String userId, @PathVariable String name) {
+    public String readLog(@PathVariable String userId, @PathVariable String name, @RequestParam boolean archive) {
         log.info("--------------------{}-------------------", name);
         LoggerService loggerService = LoggerService.mapUserSession(userId);
-        String logPath = LoggerService.getLogPath(name);
+        String logPath = archive ? LoggerService.getArchivePaths(name) : LoggerService.getLogPath(name);
+        log.info("log path   {}", logPath);
         if (logPath != null) {
             loggerService.init(logPath, simpMessagingTemplate, userId);
             loggerService.tailFile();

@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -19,64 +18,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LoggerService {
     private static final String LOGS_DIR = "/home/srvadmin/APP/logs/";
+    private static final Map<String, LoggerService> USER_MAP = new HashMap<>();
+    private static final Map<String, String> LOG_PATH_MAP = new HashMap<>();
+    private static final Map<String, String> ARCHIVE_PATH_MAP = new HashMap<>();
+
     private String filePath;
     private String topic = "/topic/messages";
     private SimpMessagingTemplate simpMessagingTemplate;
-
-    private static final Map<String, LoggerService> USER_MAP = new HashMap<>();
-    private static final Map<String, String> LOG_PATH_MAP = new HashMap<>();
-    private static final Map<String, List<String>> ARCHIVE_PATH_MAP = new HashMap<>();
-
     private boolean watching = false;
 
     public LoggerService() {
-        // document why this constructor is empty
+        // Default constructor for LoggerService
     }
 
     public void init(String logPath, SimpMessagingTemplate simpMessagingTemplate, String userId) {
         log.info("LoggerService init()");
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.filePath = logPath;
-        this.topic = this.topic + "/" + userId + "/" + new File(logPath).getName();
+        this.topic = String.format("%s/%s/%s", topic, userId, new File(logPath).getName());
         this.watching = true;
-        System.out.println("TOPIC: " + this.topic);
-        // Iterate over LOG_PATH_MAP entries and log them
-        for (Map.Entry<String, String> entry : LOG_PATH_MAP.entrySet()) {
-            String logName = entry.getKey();
-            String logPath2 = entry.getValue();
-            log.info("Log Name: {}, Log Path: {}", logName, logPath2);
-        }
-
-        // Iterate over ARCHIVE_PATH_MAP entries and log them
-        for (Map.Entry<String, List<String>> entry : ARCHIVE_PATH_MAP.entrySet()) {
-            String logName = entry.getKey();
-            List<String> archivePaths = entry.getValue();
-            log.info("Log Name: {}, Archive Paths: {}", logName, archivePaths);
-        }
+        log.info("TOPIC: {}", this.topic);
     }
 
     public void tailFile() {
         log.info("LoggerService tailFile() for file: {}", filePath);
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            StringBuilder builder;
+            StringBuilder builder = new StringBuilder();
             while (watching) {
-                builder = new StringBuilder();
-                line = null;
+                String line;
                 while ((line = reader.readLine()) != null) {
-                    log.info("Received file content: " + line);
+                    log.info("Received file content: {}", line);
                     builder.append(line).append("\n");
                 }
-                if (builder != null && builder.length() > 0) {
-                    String message = Objects.requireNonNull(builder.toString(), "Message is null");
-                    String localTopic = Objects.requireNonNull(this.topic, "Topic is null");
-                    simpMessagingTemplate.convertAndSend(localTopic, message);
+                if (builder.length() > 0) {
+                    String message = builder.toString();
+                    simpMessagingTemplate.convertAndSend(removeLogSuffix(topic), message);
                     log.info("Buffer Sent");
+                    builder.setLength(0); // Clear the builder for the next iteration
                 }
             }
             log.info("Exit While *************************");
         } catch (IOException e) {
-            log.error("Error reading the file: " + e.getMessage());
+            log.error("Error reading the file: {}", e.getMessage());
         }
     }
 
@@ -86,12 +69,7 @@ public class LoggerService {
     }
 
     public static LoggerService mapUserSession(String userId) {
-        if (USER_MAP.keySet().contains(userId)) {
-            return USER_MAP.get(userId);
-        }
-        LoggerService newSessionLoggerService = new LoggerService();
-        USER_MAP.put(userId, newSessionLoggerService);
-        return newSessionLoggerService;
+        return USER_MAP.computeIfAbsent(userId, k -> new LoggerService());
     }
 
     public static void removeUserSession(String userId) {
@@ -107,19 +85,21 @@ public class LoggerService {
         return LOG_PATH_MAP.get(logName);
     }
 
-    public static void storeArchivePaths(String logName, List<String> archivePaths) {
-        ARCHIVE_PATH_MAP.put(logName, archivePaths);
+    public static void storeArchivePaths(String archiveName, String archivePath) {
+        ARCHIVE_PATH_MAP.put(archiveName, archivePath);
     }
 
-    public static List<String> getArchivePaths(String logName) {
-        return ARCHIVE_PATH_MAP.getOrDefault(logName, Collections.emptyList());
+    public static String getArchivePaths(String archiveName) {
+        return ARCHIVE_PATH_MAP.get(archiveName);
     }
 
     public static List<String> loadLogsNames() {
-        List<String> logs = new ArrayList<>();
         File path = new File(LOGS_DIR);
-        if (!path.exists() || !path.isDirectory())
+        if (!path.exists() || !path.isDirectory()) {
             return Collections.emptyList();
+        }
+
+        List<String> logs = new ArrayList<>();
         File[] subDirs = path.listFiles(File::isDirectory);
         if (subDirs != null) {
             for (File subDir : subDirs) {
@@ -134,15 +114,14 @@ public class LoggerService {
         if (logFiles != null) {
             for (File file : logFiles) {
                 if (file.isDirectory()) {
-                    loadLogsFromSubDir(file, logs);
-                } else {
-                    String fileName = file.getName();
-                    int lastDotIndex = fileName.lastIndexOf(".");
-                    if (lastDotIndex != -1) {
-                        String logName = fileName.substring(0, lastDotIndex);
-                        logs.add(logName);
-                        storeLogPath(logName, file.getAbsolutePath());
-                    }
+                    continue;
+                }
+                String fileName = file.getName();
+                int lastDotIndex = fileName.lastIndexOf(".");
+                if (lastDotIndex != -1) {
+                    String logName = fileName.substring(0, lastDotIndex);
+                    logs.add(logName);
+                    storeLogPath(logName, file.getAbsolutePath());
                 }
             }
         }
@@ -157,18 +136,15 @@ public class LoggerService {
     }
 
     public static List<String> loadArchiveNames(String logName) {
-        List<String> archives = new ArrayList<>();
         String logDirPath = LOG_PATH_MAP.get(logName);
-        if (logDirPath != null) {
-            File logDir = new File(logDirPath).getParentFile();
-            try {
-                if (logDir.exists() && logDir.isDirectory()) {
-                    loadArchivesFromDir(logDir, archives);
-                    storeArchivePaths(logName, archives);
-                }
-            } catch (Exception e) {
-                log.error("Error loading archive names for log: " + logName, e);
-            }
+        if (logDirPath == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> archives = new ArrayList<>();
+        File logDir = new File(logDirPath).getParentFile();
+        if (logDir.exists() && logDir.isDirectory()) {
+            loadArchivesFromDir(logDir, archives);
         }
         return archives;
     }
@@ -179,10 +155,23 @@ public class LoggerService {
             for (File file : files) {
                 if (file.isDirectory()) {
                     loadArchivesFromDir(file, archives);
-                } else if (file.getName().endsWith(".gz")) {
-                    archives.add(file.getName());
+                } else if (file.getName().endsWith(".txt")) {
+                    String fileName = file.getName();
+                    int lastDotIndex = fileName.lastIndexOf(".");
+                    if (lastDotIndex != -1) {
+                        String logName = fileName.substring(0, lastDotIndex);
+                        archives.add(logName);
+                        storeArchivePaths(logName, file.getAbsolutePath());
+                    }
                 }
             }
         }
+    }
+
+    public static String removeLogSuffix(String filename) {
+        if (filename != null && (filename.endsWith(".log") || filename.endsWith(".txt"))) {
+            return filename.substring(0, filename.length() - 4);
+        }
+        return filename;
     }
 }
