@@ -90,16 +90,21 @@ public class LoggerService {
         File path = new File(LOGS_DIR);
         if (!path.exists() || !path.isDirectory())
             return Collections.emptyList();
-        loadLogsRecursively(path, logs);
+        File[] subDirs = path.listFiles(File::isDirectory);
+        if (subDirs != null) {
+            for (File subDir : subDirs) {
+                loadLogsFromSubDir(subDir, logs);
+            }
+        }
         return logs;
     }
 
-    private static void loadLogsRecursively(File dir, List<String> logs) {
+    private static void loadLogsFromSubDir(File dir, List<String> logs) {
         File[] logFiles = dir.listFiles(new LogsFileFilterName());
         if (logFiles != null) {
             for (File file : logFiles) {
                 if (file.isDirectory()) {
-                    loadLogsRecursively(file, logs);
+                    loadLogsFromSubDir(file, logs);
                 } else {
                     String fileName = file.getName();
                     int lastDotIndex = fileName.lastIndexOf(".");
