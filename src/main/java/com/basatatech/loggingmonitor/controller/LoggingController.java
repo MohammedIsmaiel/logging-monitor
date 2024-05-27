@@ -18,17 +18,6 @@ public class LoggingController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    // @GetMapping("/logs/{userId}/{name}")
-    // public String readLog(@PathVariable String userId, @PathVariable String name)
-    // {
-    // log.info("--------------------{}-------------------", name);
-    // LoggerService loggerService = LoggerService.mapUserSession(userId);
-    // loggerService.init(name, simpMessagingTemplate, userId);
-    // loggerService.tailFile();
-    // log.info("Return readLog()" + name + "-----------------------------");
-    // return "done";
-    // }
-
     @GetMapping("/logs/{userId}/{name}")
     public String readLog(@PathVariable String userId, @PathVariable String name) {
         log.info("--------------------{}-------------------", name);

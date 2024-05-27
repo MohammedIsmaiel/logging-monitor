@@ -43,7 +43,7 @@ public class LoggerService {
     }
 
     public void tailFile() {
-        log.info("LoggerService tailFile()");
+        log.info("LoggerService tailFile() for file: {}", filePath);
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             StringBuilder builder;

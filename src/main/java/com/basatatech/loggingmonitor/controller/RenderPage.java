@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RenderPage {
     @GetMapping({ "/", "/logs" })
     public String readLog(Model model) {
-        log.info("-- ---------- RenderPage ----------------- --");
+        log.info("Rendering logs page...");
         List<String> logNames = LoggerService.loadLogsNames();
         if (logNames == null || logNames.isEmpty()) {
             throw new NoAvailableLogsException("No Available Logs to show...");
@@ -41,13 +41,6 @@ public class RenderPage {
         LoggerService.removeUserSession(userId);
         return "redirect:/logout";
     }
-
-    // @GetMapping("/logs/{logName}/archives")
-    // public String getLogArchives(@PathVariable String logName, Model model) {
-    // List<String> archiveNames = LoggerService.loadArchiveNames(logName);
-    // model.addAttribute("archiveNames", archiveNames);
-    // return "fragments :: archivesDropdown";
-    // }
 
     @GetMapping("/logs/{logName}/archives")
     public ResponseEntity<List<String>> getLogArchives(@PathVariable String logName) {
