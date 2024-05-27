@@ -40,6 +40,19 @@ public class LoggerService {
         this.topic = this.topic + "/" + userId + "/" + new File(logPath).getName();
         this.watching = true;
         System.out.println("TOPIC: " + this.topic);
+        // Iterate over LOG_PATH_MAP entries and log them
+        for (Map.Entry<String, String> entry : LOG_PATH_MAP.entrySet()) {
+            String logName = entry.getKey();
+            String logPath2 = entry.getValue();
+            log.info("Log Name: {}, Log Path: {}", logName, logPath2);
+        }
+
+        // Iterate over ARCHIVE_PATH_MAP entries and log them
+        for (Map.Entry<String, List<String>> entry : ARCHIVE_PATH_MAP.entrySet()) {
+            String logName = entry.getKey();
+            List<String> archivePaths = entry.getValue();
+            log.info("Log Name: {}, Archive Paths: {}", logName, archivePaths);
+        }
     }
 
     public void tailFile() {

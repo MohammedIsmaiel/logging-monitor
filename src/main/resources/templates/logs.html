@@ -13,14 +13,19 @@
 </head>
 
 <body class="bg-dark badge-light justify-content-center row">
-    <div class="container  row my-3 bg-dark badge-light justify-content-center">
+    <div class="container row my-3 bg-dark badge-light justify-content-center">
         <form id="logForm" class="col-4 justify-content-center my-1">
             <div class="input-group">
                 <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
-                <select class="form-select " id="logName" aria-label="Example select with button addon">
-                    <option selected>Choose a connect to show logs...</option>
+                <select class="form-select" id="logName" aria-label="Example select with button addon"
+                    onchange="loadArchives()">
+                    <option selected>Choose a log to show...</option>
                     <option th:each="logName : ${logNames.stream().sorted().toList()}" th:value="${logName}"
                         th:text="${logName}"></option>
+                </select>
+                <select class="form-select" id="archiveName" aria-label="Example select with button addon"
+                    style="display: none;">
+                    <option selected>Choose an archive...</option>
                 </select>
             </div>
         </form>
@@ -28,7 +33,7 @@
             <button id="resetButton" type="button" disabled class="mx-1 my-1 btn btn-danger">reset</button>
             <button id="logoutButton" onclick="logout()" type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
-        <div id="messageList" style="color: rgb(50, 212, 50);" class=" col-11 terminal-box mt-4">
+        <div id="messageList" style="color: rgb(50, 212, 50);" class="col-11 terminal-box mt-4">
             <p class="m-0">Select Log first to display</p>
         </div>
 
@@ -52,6 +57,7 @@
         const submitButton = document.getElementById('submitButton');
         const resetButton = document.getElementById('resetButton');
         const logName = document.getElementById('logName');
+        const archiveName = document.getElementById('archiveName');
         var messageList = document.getElementById('messageList');
 
         function generateUserId() {
@@ -64,16 +70,48 @@
             window.location.href = logoutUrl;
         }
 
+        function loadArchives() {
+            var logNameValue = logName.value;
+            if (logNameValue !== 'Choose a log to show...') {
+                fetch('/logs/' + encodeURIComponent(logNameValue) + '/archives')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            archiveName.style.display = 'block';
+                            archiveName.innerHTML = '<option selected>Choose an archive...</option>';
+                            data.forEach(archive => {
+                                var option = document.createElement('option');
+                                option.value = archive;
+                                option.text = archive;
+                                archiveName.appendChild(option);
+                            });
+                        } else {
+                            archiveName.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching archives:', error);
+                    });
+            } else {
+                archiveName.style.display = 'none';
+            }
+        }
+
         client.connect({}, function (frame) {
             console.log('Connected: ' + frame);
 
             document.getElementById('logForm').addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevent the default form submission behavior
+                event.preventDefault();
                 resetButton.removeAttribute("disabled");
                 submitButton.setAttribute("disabled", 'true');
                 logName.setAttribute('disabled', 'true');
-                var logNameValue = logName.value;
+                messageList = document.getElementById('messageList');
+                var logNameValue = document.getElementById('logName').value;
+                var archiveNameValue = document.getElementById('archiveName').value;
                 var topicPath = '/topic/messages/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
+                if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
+                    topicPath += '/' + encodeURIComponent(archiveNameValue);
+                }
                 client.subscribe(topicPath, function (message) {
                     console.log(message.body);
                     var item = document.createElement('p');
@@ -82,6 +120,9 @@
                     messageList.appendChild(item);
                 });
                 var url = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue);
+                if (archiveName.style.display === 'block' && archiveNameValue !== 'Choose an archive...') {
+                    url += '/' + encodeURIComponent(archiveNameValue);
+                }
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
@@ -100,7 +141,7 @@
 
         resetButton.addEventListener('click', function (event) {
             event.preventDefault();
-            var logNameValue = logName.value;
+            var logNameValue = document.getElementById('logName').value;
             var stopUrl = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue) + '/stop';
             fetch(stopUrl, {
                 method: 'GET'
