@@ -39,4 +39,11 @@ public class RenderPage {
         LoggerService.removeUserSession(userId);
         return "redirect:/logout";
     }
+
+    @GetMapping("/logs/{logName}/archives")
+    public String getLogArchives(@PathVariable String logName, Model model) {
+        List<String> archiveNames = LoggerService.loadArchiveNames(logName);
+        model.addAttribute("archiveNames", archiveNames);
+        return "fragments :: archivesDropdown";
+    }
 }

@@ -99,6 +99,20 @@ public class LoggerService {
         return logs;
     }
 
+    public static List<String> loadArchiveNames(String logName) {
+        List<String> archives = new ArrayList<>();
+        File logDir = new File(LOGS_DIR + logName);
+        if (logDir.exists() && logDir.isDirectory()) {
+            File[] archiveFiles = logDir.listFiles((dir, name) -> name.endsWith(".gz"));
+            if (archiveFiles != null) {
+                for (File file : archiveFiles) {
+                    archives.add(file.getName());
+                }
+            }
+        }
+        return archives;
+    }
+
     private static void loadLogsFromSubDir(File dir, List<String> logs) {
         File[] logFiles = dir.listFiles(new LogsFileFilterName());
         if (logFiles != null) {
