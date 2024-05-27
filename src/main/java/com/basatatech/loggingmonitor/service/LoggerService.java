@@ -102,8 +102,12 @@ public class LoggerService {
     public static List<String> loadArchiveNames(String logName) {
         List<String> archives = new ArrayList<>();
         File logDir = new File(LOGS_DIR + logName);
-        if (logDir.exists() && logDir.isDirectory()) {
-            loadArchivesFromDir(logDir, archives);
+        try {
+            if (logDir.exists() && logDir.isDirectory()) {
+                loadArchivesFromDir(logDir, archives);
+            }
+        } catch (Exception e) {
+            log.error("Error loading archive names for log: " + logName, e);
         }
         return archives;
     }
