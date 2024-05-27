@@ -103,14 +103,22 @@ public class LoggerService {
         List<String> archives = new ArrayList<>();
         File logDir = new File(LOGS_DIR + logName);
         if (logDir.exists() && logDir.isDirectory()) {
-            File[] archiveFiles = logDir.listFiles((dir, name) -> name.endsWith(".gz"));
-            if (archiveFiles != null) {
-                for (File file : archiveFiles) {
+            loadArchivesFromDir(logDir, archives);
+        }
+        return archives;
+    }
+
+    private static void loadArchivesFromDir(File dir, List<String> archives) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    loadArchivesFromDir(file, archives);
+                } else if (file.getName().endsWith(".gz")) {
                     archives.add(file.getName());
                 }
             }
         }
-        return archives;
     }
 
     private static void loadLogsFromSubDir(File dir, List<String> logs) {
