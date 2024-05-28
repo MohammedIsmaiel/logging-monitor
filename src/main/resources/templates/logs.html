@@ -13,7 +13,7 @@
 </head>
 
 <body class="bg-dark badge-light justify-content-center row">
-    <div class="container row my-3 bg-dark badge-light justify-content-center">
+    <div class="container row my-3 badge-light justify-content-center">
         <form id="logForm" class="col-4 justify-content-center my-1">
             <div class="input-group">
                 <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
@@ -33,14 +33,14 @@
             <button id="resetButton" type="button" disabled class="mx-1 my-1 btn btn-danger">reset</button>
             <button id="logoutButton" onclick="logout()" type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
-        <div id="messageList" style="color: rgb(50, 212, 50);" class="col-11 terminal-box mt-4">
+        <div id="messageList" class="col-11 terminal-box mt-4">
             <p class="m-0">Select Log first to display</p>
         </div>
 
         <div id="credits" class="mt-4 text-center">
             Powered by A.G.I
             <br>
-            <span class="moving-bar"> AbdAlhafieez , Gebali , Ismaieel </span>
+            <span class="moving-bar"> AbdAlhafeez , Gebali , Ismaieel </span>
         </div>
     </div>
 
@@ -50,121 +50,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
         integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        var client;
-        var webSocket = new SockJS('/websocket');
-        client = Stomp.over(webSocket);
-        const submitButton = document.getElementById('submitButton');
-        const resetButton = document.getElementById('resetButton');
-        const logName = document.getElementById('logName');
-        const archiveName = document.getElementById('archiveName');
-        var messageList = document.getElementById('messageList');
-
-        function generateUserId() {
-            return 'user_' + Math.floor(Math.random() * 1000);
-        }
-        var user_id = generateUserId();
-
-        function logout() {
-            var logoutUrl = '/logs/' + user_id + '/logout';
-            window.location.href = logoutUrl;
-        }
-
-        function loadArchives() {
-            var logNameValue = logName.value;
-            if (logNameValue !== 'Choose a log to show...') {
-                fetch('/logs/' + encodeURIComponent(logNameValue) + '/archives')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            archiveName.style.display = 'block';
-                            archiveName.innerHTML = '<option selected>Choose an archive...</option>';
-                            data.forEach(archive => {
-                                var option = document.createElement('option');
-                                option.value = archive;
-                                option.text = archive;
-                                archiveName.appendChild(option);
-                            });
-                        } else {
-                            archiveName.style.display = 'none';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching archives:', error);
-                    });
-            } else {
-                archiveName.style.display = 'none';
-            }
-        }
-
-        client.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-
-            document.getElementById('logForm').addEventListener('submit', function (event) {
-                event.preventDefault();
-                resetButton.removeAttribute("disabled");
-                submitButton.setAttribute("disabled", 'true');
-                logName.setAttribute('disabled', 'true');
-                messageList = document.getElementById('messageList');
-                var logNameValue = document.getElementById('logName').value;
-                var archiveNameValue = document.getElementById('archiveName').value;
-                var topicPath = '/topic/messages/' + encodeURIComponent(user_id) + '/';
-                var url = '/logs/' + encodeURIComponent(user_id) + '/';
-                var isArchive = archiveNameValue !== 'Choose an archive...' && archiveNameValue !== null;
-                if (isArchive) {
-                    topicPath += encodeURIComponent(archiveNameValue);
-                    url += encodeURIComponent(archiveNameValue) + '?archive=true';
-                } else {
-                    topicPath += encodeURIComponent(logNameValue);
-                    url += encodeURIComponent(logNameValue) + '?archive=false';
-                }
-                client.subscribe(topicPath, function (message) {
-                    console.log(message.body);
-                    var item = document.createElement('p');
-                    item.appendChild(document.createTextNode(message.body));
-                    item.classList.add('m-0');
-                    messageList.appendChild(item);
-                });
-
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        console.log('Response:', data);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            });
-        });
-
-        resetButton.addEventListener('click', function (event) {
-            event.preventDefault();
-            var logNameValue = document.getElementById('logName').value;
-            var stopUrl = '/logs/' + encodeURIComponent(user_id) + '/' + encodeURIComponent(logNameValue) + '/stop';
-            fetch(stopUrl, {
-                method: 'GET'
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    console.log('Stop Response:', data);
-                })
-                .catch(error => {
-                    console.error('Error stopping log:', error);
-                });
-
-            location.reload(true);
-        });
-    </script>
+    <!-- Import your JavaScript file -->
+    <script src="/js/logs.js"></script>
 </body>
 
 </html>

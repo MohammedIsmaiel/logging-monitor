@@ -1,17 +1,98 @@
 /* styles.css */
 
+:root {
+    --main-text-color: #0f0; /* Default green text color */
+    --main-border-color: #0f0; /* Default green border color */
+    --main-shadow-color: rgba(0, 255, 0, 0.5); /* Default green shadow color */
+    --dropdown-text-color: #000; /* Default black text color for dropdown options */
+    --dropdown-bg-color: rgba(0, 255, 0, 0.2); /* Default green background color for dropdown options */
+    --background-image: url('/images/giphy2.gif');
+}
+
 body {
-    background-color: #212529;
     font-family: 'Courier New', Courier, monospace;
+    background-image: var(--background-image); /* Use the background-image variable */
+    background-size: cover;
+    background-position: center;
+    animation: flicker 0.1s infinite alternate;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+/* Give a slight transparency to the entire body */
+body {
+    background-color: rgba(0, 0, 0, 0.7); /* Adjust the alpha value as needed */
 }
 
 .terminal-box {
     height: 70vh;
     overflow-y: scroll;
-    border: 2px solid #28a745;
+    border: 2px solid var(--main-border-color);
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background to see the moving background */
+    backdrop-filter: blur(5px); /* Apply a slight blur effect */
+    color: var(--main-text-color); /* Blue text color */
+    font-size: 16px; /* Increased font size */
+    line-height: 1.6; /* Increased line height */
+    font-family: 'Lucida Console', Monaco, monospace;
+    box-shadow: 0 0 20px var(--main-shadow-color);
+    opacity: .9; /* Adjusted opacity */
+}
+
+.form-select,
+.input-group {
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+    backdrop-filter: blur(5px); /* Apply a slight blur effect */
+    border: 1px solid var(--main-border-color); /* Green border */
+    box-shadow: 0 0 10px var(--main-shadow-color); /* Green shadow */
+}
+
+.form-select:focus,
+.input-group:focus {
+    background-color: rgba(255, 255, 255, 0.4); /* Increase transparency on focus */
+    border-color: var(--main-border-color); /* Green border on focus */
+}
+
+.form-select option {
+    color: var(--dropdown-text-color); /* Green text color for dropdown options */
+    background-color: var(--dropdown-bg-color); /* Green background color for dropdown options */
+}
+
+.btn-primary,
+.btn-danger,
+.btn-info {
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+    color: var(--main-text-color); /* Green text color */
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-info:hover {
+    background-color: rgba(255, 255, 255, 0.4); /* Increase transparency on hover */
+}
+
+
+#credits {
+    color: var(--main-text-color); /* Green text color */
+    font-size: 16px; /* Increased font size */
+    text-align: center;
+    margin-top: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#credits .moving-bar {
+    padding-top: 20px;
+    display: inline-block;
+    animation: slide 10s linear infinite;
+    font-weight: bold;
+    color: var(--main-text-color); /* Green text color */
+    font-size: 20px; /* Increased font size */
+    text-shadow: 0 0 5px var(--main-text-color), 0 0 10px var(--main-text-color), 0 0 30px var(--main-text-color); /* Adjusted text shadow */
 }
 
 @keyframes slide {
@@ -26,28 +107,4 @@ body {
     100% {
         transform: translateX(-100%);
     }
-}
-
-#credits {
-    color: #6c757d;
-    font-size: 14px;
-    text-align: center;
-    margin-top: 20px;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-#credits .moving-bar {
-    padding-top: 20px;
-    display: inline-block;
-    animation: slide 10s linear infinite;
-    /* Adjust the animation duration as needed */
-    font-weight: bold;
-    /* Add bold font weight */
-    color: #28a745;
-    /* Set color to green */
-    font-size: 18px;
-    /* Adjust the font size as needed */
-    text-shadow: 0 0 5px #ff8800, 0 0 10px #ff8800, 0 0 30px #ff8800;
-    /* Flame-like text-shadow effect */
 }
