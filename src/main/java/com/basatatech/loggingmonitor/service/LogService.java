@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LogService {
-    private static final String LOGS_DIR = "/home/ahmedgebali/Desktop/logs/";
+    private static final String LOGS_DIR = "/home/srvadmin/APP/logs/";
     private static final Map<String, LogService> USER_MAP = new HashMap<>();
     private static final Map<String, String> LOG_PATH_MAP = new HashMap<>();
     private static final Map<String, String> ARCHIVE_PATH_MAP = new HashMap<>();
