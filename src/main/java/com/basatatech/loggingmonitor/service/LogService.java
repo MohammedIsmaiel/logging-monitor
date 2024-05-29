@@ -8,15 +8,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 
 import com.basatatech.loggingmonitor.util.FileUtil;
 
+import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Data
+@Service
 public class LogService {
-    private static final String LOGS_DIR = "/home/srvadmin/APP/logs/";
+    @Value("${logs.directory.path}")
+    private String logsDir;
     private static final Map<String, LogService> USER_MAP = new HashMap<>();
     private static final Map<String, String> LOG_PATH_MAP = new HashMap<>();
     private static final Map<String, String> ARCHIVE_PATH_MAP = new HashMap<>();
@@ -28,6 +35,13 @@ public class LogService {
 
     public LogService() {
         // Default constructor for LogService
+    }
+
+    private static LogService logServiceInstance;
+
+    @PostConstruct
+    private void init() {
+        logServiceInstance = this;
     }
 
     public static String readLog(String userId, String name, boolean archive,
@@ -125,7 +139,10 @@ public class LogService {
     }
 
     public static List<String> loadLogsNames() {
-        return FileUtil.loadLogsNames(LOGS_DIR);
+        if (logServiceInstance == null) {
+            throw new IllegalStateException("LogService is not initialized yet.");
+        }
+        return FileUtil.loadLogsNames(logServiceInstance.getLogsDir());
     }
 
     public static List<String> loadArchiveNames(String logName) {
