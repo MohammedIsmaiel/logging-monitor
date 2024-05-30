@@ -12,17 +12,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.basatatech.loggingmonitor.exception.NoAvailableLogsException;
+import com.basatatech.loggingmonitor.service.LogManager;
 import com.basatatech.loggingmonitor.service.LogService;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
+@AllArgsConstructor
 @Slf4j
 public class PageController {
+    private LogService logService;
+
     @GetMapping({ "/", "/logs" })
     public String readLog(Model model) {
         log.info("Rendering logs page...");
-        List<String> logNames = LogService.loadLogsNames();
+        List<String> logNames = logService.loadLogsNames();
         if (logNames == null || logNames.isEmpty()) {
             throw new NoAvailableLogsException("No Available Logs to show...");
         }
@@ -39,7 +44,7 @@ public class PageController {
 
     @GetMapping("/logs/{userId}/logout")
     public String getMethodName(@PathVariable String userId) {
-        LogService.removeUserSession(userId);
+        LogManager.removeUserSession(userId);
         return "redirect:/logout";
     }
 
