@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.basatatech.loggingmonitor.service.LogService;
+import com.basatatech.loggingmonitor.service.LogManager;
 
 public class FileUtil {
     private FileUtil() {
@@ -41,7 +41,7 @@ public class FileUtil {
                 if (lastDotIndex != -1) {
                     String logName = fileName.substring(0, lastDotIndex);
                     logs.add(logName);
-                    LogService.storeLogPath(logName, file.getAbsolutePath());
+                    LogManager.storeLogPath(logName, file.getAbsolutePath());
                 }
             }
         }
@@ -80,7 +80,7 @@ public class FileUtil {
                     if (lastDotIndex != -1) {
                         String logName = fileName.substring(0, lastDotIndex);
                         archives.add(logName);
-                        LogService.storeArchivePaths(logName, file.getAbsolutePath());
+                        LogManager.storeArchivePaths(logName, file.getAbsolutePath());
                     }
                 }
             }
