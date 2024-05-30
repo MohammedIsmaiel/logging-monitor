@@ -26,6 +26,6 @@ public class LoggingController {
 
     @GetMapping("/logs/{userId}/{name}/stop")
     public String stopLog(@PathVariable String userId, @PathVariable String name) {
-        return LogService.stopLog(userId, name);
+        return LogService.stopLog(userId);
     }
 }
