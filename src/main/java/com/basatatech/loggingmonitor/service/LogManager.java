@@ -146,8 +146,7 @@ public class LogManager {
             }
             if (builder.length() > 0) {
                 String message = builder.toString();
-                simpMessagingTemplate.convertAndSend(FileUtil.removeLogSuffix(topic),
-                        message);
+                simpMessagingTemplate.convertAndSend(FileUtil.removeLogSuffix(topic), message);
             }
             lastReadPosition = channel.position(); // Update the last read position
         } catch (IOException e) {
@@ -181,6 +180,7 @@ public class LogManager {
         // Log session closing
         USER_MAP.computeIfPresent(userId, (key, value) -> {
             value.logSessionClosed(key);
+            value.stopWatching(); // Stop watching for this session
             return null;
         });
         log.info("remove session for {}", userId);
@@ -220,8 +220,15 @@ public class LogManager {
 
     // Method to check and cleanup expired sessions
     private static void cleanupExpiredSessions() {
+        log.info("I'm cleaning the expired session right now !!");
         long currentTime = System.currentTimeMillis();
-        USER_MAP.entrySet().removeIf(entry -> (currentTime - entry.getValue().lastActivityTime) > SESSION_TIMEOUT);
+        USER_MAP.entrySet().removeIf(entry -> {
+            if ((currentTime - entry.getValue().lastActivityTime) > SESSION_TIMEOUT) {
+                entry.getValue().stopWatching(); // Stop watching for this session
+                return true;
+            }
+            return false;
+        });
     }
 
     // Method for debugging: Log the opening of a session
