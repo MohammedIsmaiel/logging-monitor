@@ -26,8 +26,6 @@
                 <select class="form-select" id="archiveName" aria-label="Example select with button addon"
                     style="display: none;">
                     <option selected>Choose an archive...</option>
-                    <option th:each="archiveName : ${archiveNames.stream().sorted().toList()}" th:value="${archiveName}"
-                        th:text="${archiveName}"></option>
                 </select>
             </div>
         </form>

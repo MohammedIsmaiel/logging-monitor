@@ -26,6 +26,8 @@ function loadArchives() {
                 if (data.length > 0) {
                     archiveName.style.display = 'block';
                     archiveName.innerHTML = '<option selected>Choose an archive...</option>';
+                    // Sort archive names alphabetically
+                    data.sort();
                     data.forEach(archive => {
                         var option = document.createElement('option');
                         option.value = archive;
