@@ -33,7 +33,7 @@ public class LogManager {
     private static final Map<String, LogManager> USER_MAP = new ConcurrentHashMap<>();
     private static final Map<String, String> LOG_PATH_MAP = new ConcurrentHashMap<>();
     private static final Map<String, String> ARCHIVE_PATH_MAP = new ConcurrentHashMap<>();
-    private static final long SESSION_TIMEOUT = 1L * 60 * 1000; // 30 minutes in milliseconds
+    private static final long SESSION_TIMEOUT = 10L * 60 * 1000; // 10 minutes in milliseconds
     private static final ScheduledExecutorService sessionCleanupExecutor = Executors.newScheduledThreadPool(1);
     // private static final Map<String, Long> USER_READ_POSITIONS = new HashMap<>();
 
