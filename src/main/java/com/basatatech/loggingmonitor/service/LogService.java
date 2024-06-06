@@ -39,8 +39,6 @@ public class LogService {
     public static String stopLog(String userId) {
         LogManager logManager = LogManager.mapUserSession(userId);
         if (logManager != null) {
-            logManager.stopWatching();
-            // loggerService.saveLastReadPosition(userId);
             LogManager.removeUserSession(userId);
             return "done";
         } else {
