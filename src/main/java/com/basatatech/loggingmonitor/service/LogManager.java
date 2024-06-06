@@ -21,21 +21,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.basatatech.loggingmonitor.util.FileUtil;
 
-// @Slf4j
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class LogManager {
-    private static final Logger log = LoggerFactory.getLogger(LogManager.class);
     private static final Map<String, LogManager> USER_MAP = new ConcurrentHashMap<>();
     private static final Map<String, String> LOG_PATH_MAP = new ConcurrentHashMap<>();
     private static final Map<String, String> ARCHIVE_PATH_MAP = new ConcurrentHashMap<>();
     private static final long SESSION_TIMEOUT = 10L * 60 * 1000; // 10 minutes in milliseconds
     private static final ScheduledExecutorService sessionCleanupExecutor = Executors.newScheduledThreadPool(1);
-    // private static final Map<String, Long> USER_READ_POSITIONS = new HashMap<>();
 
     static {
         // Schedule session cleanup task to run periodically
@@ -53,13 +51,11 @@ public class LogManager {
     private long lastActivityTime = 0;
 
     public void init(String logPath, SimpMessagingTemplate simpMessagingTemplate, String userId, boolean archive) {
-        log.info("LogManager init()");
-        updateSessionActivity(); // Update session activity when initializing
+        updateSessionActivity(userId); // Update session activity when initializing
         logSessionOpened(userId); // Log session opening
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.filePath = logPath;
         this.topic = String.format("/topic/messages/%s/%s", userId, new File(logPath).getName());
-        // this.lastReadPosition = USER_READ_POSITIONS.getOrDefault(userId, 0L);
         if (!archive) {
             this.watching = true;
         }
@@ -67,7 +63,7 @@ public class LogManager {
     }
 
     public String readFile(boolean archive) {
-        log.info("LogManager readFile() for file: {}", filePath);
+        log.info("read content for file: {}", filePath);
         if (archive) {
             return readEntireFile();
         } else {
@@ -154,6 +150,54 @@ public class LogManager {
         }
     }
 
+    public static void updateActiveUserSession(String userId) {
+        log.info("Heartbeat received for user " + userId);
+        LogManager logManager = USER_MAP.get(userId);
+        if (logManager != null) {
+            logManager.updateSessionActivity(userId);
+        }
+    }
+
+    // Method to update session activity timestamp
+    private void updateSessionActivity(String userId) {
+        log.info("Update Session Activity for user " + userId);
+        this.lastActivityTime = System.currentTimeMillis();
+    }
+
+    // Method to check and cleanup expired sessions
+    private static void cleanupExpiredSessions() {
+        log.info("I'm cleaning the expired session right now after " + (SESSION_TIMEOUT / 60000)
+                + " minutes of inactive! ");
+        long currentTime = System.currentTimeMillis();
+        USER_MAP.entrySet().removeIf(entry -> {
+            if ((currentTime - entry.getValue().lastActivityTime) > SESSION_TIMEOUT) {
+                entry.getValue().stopWatching();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public static LogManager mapUserSession(String userId) {
+        // Update session activity when accessing session
+        LogManager logManager = USER_MAP.computeIfAbsent(userId, k -> new LogManager());
+        logManager.updateSessionActivity(userId);
+        return logManager;
+    }
+
+    public static void removeUserSession(String userId) {
+        // Log session closing
+        USER_MAP.computeIfPresent(userId, (key, value) -> {
+            value.logSessionClosed(key);
+            value.stopWatching(); // Stop watching for this session
+            return null;
+        });
+        log.info("remove session for {}", userId);
+        USER_MAP.remove(userId);
+        logOpenSessions(); // Log remaining open sessions
+        logOpenSessionUserIds(); // Log user IDs of remaining open sessions
+    }
+
     public void stopWatching() {
         this.watching = false;
         if (watchThread != null) {
@@ -169,24 +213,20 @@ public class LogManager {
         log.info("-------------- Stop Watching -----------------------");
     }
 
-    public static LogManager mapUserSession(String userId) {
-        // Update session activity when accessing session
-        LogManager logManager = USER_MAP.computeIfAbsent(userId, k -> new LogManager());
-        logManager.updateSessionActivity();
-        return logManager;
+    private void logSessionOpened(String userId) {
+        log.info("Session opened for user: {}", userId);
     }
 
-    public static void removeUserSession(String userId) {
-        // Log session closing
-        USER_MAP.computeIfPresent(userId, (key, value) -> {
-            value.logSessionClosed(key);
-            value.stopWatching(); // Stop watching for this session
-            return null;
-        });
-        log.info("remove session for {}", userId);
-        USER_MAP.remove(userId);
-        logOpenSessions(); // Log remaining open sessions
-        logOpenSessionUserIds(); // Log user IDs of remaining open sessions
+    private void logSessionClosed(String userId) {
+        log.info("Session closed for user: {}", userId);
+    }
+
+    private static void logOpenSessions() {
+        log.info("Total open sessions: {}", USER_MAP.size());
+    }
+
+    private static void logOpenSessionUserIds() {
+        log.info("Open session user IDs: {}", USER_MAP.keySet());
     }
 
     public static void storeLogPath(String logName, String logPath) {
@@ -213,48 +253,4 @@ public class LogManager {
         return FileUtil.loadArchiveNames(LOG_PATH_MAP.get(logName));
     }
 
-    // Method to update session activity timestamp
-    private void updateSessionActivity() {
-        this.lastActivityTime = System.currentTimeMillis();
-    }
-
-    // Method to check and cleanup expired sessions
-    private static void cleanupExpiredSessions() {
-        log.info("I'm cleaning the expired session right now !!");
-        long currentTime = System.currentTimeMillis();
-        USER_MAP.entrySet().removeIf(entry -> {
-            if ((currentTime - entry.getValue().lastActivityTime) > SESSION_TIMEOUT) {
-                entry.getValue().stopWatching(); // Stop watching for this session
-                return true;
-            }
-            return false;
-        });
-    }
-
-    // Method for debugging: Log the opening of a session
-    private void logSessionOpened(String userId) {
-        log.info("in logSessionOpened");
-        log.info("Session opened for user: {}", userId);
-    }
-
-    // Method for debugging: Log the closing of a session
-    private void logSessionClosed(String userId) {
-        log.info("in logSessionClosed");
-        log.info("Session closed for user: {}", userId);
-    }
-
-    // Method for debugging: Log the total number of open sessions
-    private static void logOpenSessions() {
-        log.info("in logOpenSessions");
-        log.info("Total open sessions: {}", USER_MAP.size());
-    }
-
-    // Method for debugging: Log the user IDs of all open sessions
-    private static void logOpenSessionUserIds() {
-        log.info("in logOpenSessionUserIds");
-        log.info("Open session user IDs: {}", USER_MAP.keySet());
-    }
-    // public void saveLastReadPosition(String userId) {
-    // USER_READ_POSITIONS.put(userId, lastReadPosition);
-    // }
 }
