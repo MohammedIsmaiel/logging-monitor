@@ -1,46 +1,39 @@
-var client;
-var webSocket = new SockJS('/websocket');
-client = Stomp.over(webSocket);
 const submitButton = document.getElementById('submitButton');
 const resetButton = document.getElementById('resetButton');
 const logName = document.getElementById('logName');
 const archiveName = document.getElementById('archiveName');
+var user_id = generateUserId();
 var messageList = document.getElementById('messageList');
+var firstLoad = true;  // Flag to track the first load
 
 function generateUserId() {
     return 'user_' + Math.floor(Math.random() * 1000);
-}
-var user_id = generateUserId();
-
-function logout() {
-    var logoutUrl = '/logs/' + user_id + '/logout';
-    window.location.href = logoutUrl;
 }
 
 function loadArchives() {
     var logNameValue = logName.value;
     if (logNameValue !== 'Choose a log to show...') {
         fetch('/logs/' + encodeURIComponent(logNameValue) + '/archives')
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    archiveName.style.display = 'block';
-                    archiveName.innerHTML = '<option selected>Choose an archive...</option>';
-                    // Sort archive names alphabetically
-                    data.sort();
-                    data.forEach(archive => {
-                        var option = document.createElement('option');
-                        option.value = archive;
-                        option.text = archive;
-                        archiveName.appendChild(option);
-                    });
-                } else {
-                    archiveName.style.display = 'none';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching archives:', error);
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                archiveName.style.display = 'block';
+                archiveName.innerHTML = '<option selected>Choose an archive...</option>';
+                // Sort archive names alphabetically
+                data.sort();
+                data.forEach(archive => {
+                    var option = document.createElement('option');
+                    option.value = archive;
+                    option.text = archive;
+                    archiveName.appendChild(option);
+                });
+            } else {
+                archiveName.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching archives:', error);
+        });
     } else {
         archiveName.style.display = 'none';
     }
@@ -48,7 +41,6 @@ function loadArchives() {
 
 client.connect({}, function (frame) {
     console.log('Connected: ' + frame);
-
     document.getElementById('logForm').addEventListener('submit', function (event) {
         event.preventDefault();
         resetButton.removeAttribute("disabled");
@@ -73,8 +65,12 @@ client.connect({}, function (frame) {
                 console.log(message.body);
                 var item = document.createElement('p');
                 item.appendChild(document.createTextNode(message.body));
-                item.classList.add('m-0');
+                item.classList.add('m-0', 'unread');
                 messageList.appendChild(item);
+                if (firstLoad) {  // Auto-scroll only on the first load
+                    autoScroll();
+                    firstLoad = false;  // Set the flag to false after the first load
+                }
             });
         }
 
@@ -123,3 +119,24 @@ resetButton.addEventListener('click', function (event) {
 
     location.reload(true);
 });
+
+function logout() {
+    var logoutUrl = '/logs/' + user_id + '/logout';
+    window.location.href = logoutUrl;
+}
+
+function autoScroll() {
+    messageList.scrollTop = messageList.scrollHeight;
+}
+
+function markAsRead() {
+    const unreadMessages = messageList.querySelectorAll('.unread');
+    unreadMessages.forEach(message => {
+        message.classList.remove('unread');
+    });
+}
+function checkScroll() {
+    if (messageList.scrollTop + messageList.clientHeight >= messageList.scrollHeight) {
+        markAsRead();
+    }
+}

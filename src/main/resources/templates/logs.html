@@ -33,7 +33,7 @@
             <button id="resetButton" type="button" disabled class="mx-1 my-1 btn btn-danger">reset</button>
             <button id="logoutButton" onclick="logout()" type="submit" class="mx-1 btn btn-info">log out</button>
         </div>
-        <div id="messageList" class="col-11 terminal-box mt-4">
+        <div id="messageList" class="col-11 terminal-box mt-4" onscroll="checkScroll()">
             <p class="m-0">Select Log first to display</p>
         </div>
 
@@ -51,6 +51,8 @@
         integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Import your JavaScript file -->
+    <script src="/js/heartbeat.js"></script>
+    <script src="/js/session.js"></script>
     <script src="/js/logs.js"></script>
 </body>
 
