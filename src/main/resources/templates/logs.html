@@ -16,7 +16,6 @@
     <div class="container row my-3 badge-light justify-content-center">
         <form id="logForm" class="col-4 justify-content-center my-1">
             <div class="input-group">
-                <button id="submitButton" class="btn btn-primary" type="submit">Show logs</button>
                 <select class="form-select" id="logName" aria-label="Example select with button addon"
                     onchange="loadArchives()">
                     <option selected>Choose a log to show...</option>
@@ -27,6 +26,7 @@
                     style="display: none;">
                     <option selected>Choose an archive...</option>
                 </select>
+                <button id="submitButton" class="btn btn-primary" type="submit" disabled>Show logs</button>
             </div>
         </form>
         <div class="col-4 justify-content-center">

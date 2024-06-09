@@ -34,8 +34,10 @@ function loadArchives() {
         .catch(error => {
             console.error('Error fetching archives:', error);
         });
+        submitButton.removeAttribute('disabled'); // Enable the submit button
     } else {
         archiveName.style.display = 'none';
+        submitButton.setAttribute('disabled', 'true'); // Disable the submit button
     }
 }
 
@@ -46,6 +48,7 @@ client.connect({}, function (frame) {
         resetButton.removeAttribute("disabled");
         submitButton.setAttribute("disabled", 'true');
         logName.setAttribute('disabled', 'true');
+        archiveName.setAttribute('disabled', 'true'); // Disable archive dropdown
         messageList = document.getElementById('messageList');
         var logNameValue = document.getElementById('logName').value;
         var archiveNameValue = document.getElementById('archiveName').value;
@@ -117,6 +120,13 @@ resetButton.addEventListener('click', function (event) {
             console.error('Error stopping log:', error);
         });
 
+    // Re-enable the dropdowns and reset button states
+    logName.removeAttribute('disabled');
+    archiveName.removeAttribute('disabled');
+    submitButton.setAttribute('disabled', 'true');
+    resetButton.setAttribute('disabled', 'true');
+    archiveName.style.display = 'none'; // Hide the archive dropdown
+
     location.reload(true);
 });
 
@@ -140,3 +150,17 @@ function checkScroll() {
         markAsRead();
     }
 }
+
+// Initial call to disable the button until a selection is made
+function updateButtonState() {
+    if (logName.value !== 'Choose a log to show...') {
+        submitButton.removeAttribute('disabled');
+    } else {
+        submitButton.setAttribute('disabled', 'true');
+    }
+}
+
+// Event listeners to update button state
+logName.addEventListener('change', updateButtonState);
+archiveName.addEventListener('change', updateButtonState);
+updateButtonState();
