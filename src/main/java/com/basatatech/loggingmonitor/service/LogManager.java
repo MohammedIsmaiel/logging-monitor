@@ -50,6 +50,19 @@ public class LogManager {
     private long lastReadPosition = 0;
     private long lastActivityTime = 0;
 
+    private LogManager() {
+        // Private constructor to prevent direct instantiation
+    }
+
+    public static LogManager mapUserSession(String userId) {
+        return USER_MAP.computeIfAbsent(userId, k -> {
+            LogManager logManager = new LogManager();
+            logManager.updateSessionActivity(userId);
+            logManager.logSessionOpened(userId);
+            return logManager;
+        });
+    }
+
     public void init(String logPath, SimpMessagingTemplate simpMessagingTemplate, String userId, boolean archive) {
         updateSessionActivity(userId); // Update session activity when initializing
         logSessionOpened(userId); // Log session opening
@@ -166,8 +179,6 @@ public class LogManager {
 
     // Method to check and cleanup expired sessions
     private static void cleanupExpiredSessions() {
-        log.info("I'm cleaning the expired session right now after " + (SESSION_TIMEOUT / 60000)
-                + " minutes of inactive! ");
         long currentTime = System.currentTimeMillis();
         USER_MAP.entrySet().removeIf(entry -> {
             if ((currentTime - entry.getValue().lastActivityTime) > SESSION_TIMEOUT) {
@@ -176,13 +187,7 @@ public class LogManager {
             }
             return false;
         });
-    }
-
-    public static LogManager mapUserSession(String userId) {
-        // Update session activity when accessing session
-        LogManager logManager = USER_MAP.computeIfAbsent(userId, k -> new LogManager());
-        logManager.updateSessionActivity(userId);
-        return logManager;
+        log.info("Cleaned up expired sessions after " + (SESSION_TIMEOUT / 60000) + " minutes of inactive! ");
     }
 
     public static void removeUserSession(String userId) {
@@ -203,14 +208,14 @@ public class LogManager {
         if (watchThread != null) {
             watchThread.interrupt();
         }
-        try {
-            if (watchService != null) {
+        if (watchService != null) {
+            try {
                 watchService.close();
+            } catch (IOException e) {
+                log.error("Error stopping file watcher: ", e);
             }
-        } catch (IOException e) {
-            log.error("Error stopping file watcher: ", e);
         }
-        log.info("-------------- Stop Watching -----------------------");
+        log.info("Stopped watching");
     }
 
     private void logSessionOpened(String userId) {

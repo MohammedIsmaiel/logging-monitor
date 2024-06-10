@@ -1,17 +1,117 @@
 package com.basatatech.loggingmonitor.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.basatatech.loggingmonitor.service.LogManager;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class FileUtil {
     private FileUtil() {
         // Default constructor for FileUtil
     }
+
+    // public static String readEntireFile(String filePath) {
+    // try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    // StringBuilder builder = new StringBuilder();
+    // String line;
+    // while ((line = reader.readLine()) != null) {
+    // builder.append(line).append("\n");
+    // }
+    // return builder.toString();
+    // } catch (IOException e) {
+    // log.error("Error reading the file: {}", e.getMessage());
+    // return "Error reading the file";
+    // }
+    // }
+
+    // public static String readInitialContent(String filePath, LogManager
+    // logManager) {
+    // StringBuilder builder = new StringBuilder();
+    // try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    // String line;
+    // while ((line = reader.readLine()) != null) {
+    // builder.append(line).append("\n");
+    // }
+    // logManager.setLastReadPosition(new File(filePath).length());
+    // } catch (IOException e) {
+    // log.error("Error reading initial content of the file: {}", e.getMessage());
+    // return "Error reading the file";
+    // }
+    // return builder.toString();
+    // }
+
+    // public static void startFileWatcher(String filePath, LogManager logManager) {
+    // try {
+    // WatchService watchService = FileSystems.getDefault().newWatchService();
+    // Path path = Paths.get(filePath).getParent();
+    // path.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+    // Thread watchThread = new Thread(() -> {
+    // try {
+    // WatchKey key;
+    // while (logManager.isWatching() && (key = watchService.take()) != null) {
+    // for (WatchEvent<?> event : key.pollEvents()) {
+    // Path changed = (Path) event.context();
+    // if (changed.toString().equals(Paths.get(filePath).getFileName().toString()))
+    // {
+    // readNewContent(filePath, logManager);
+    // }
+    // }
+    // key.reset();
+    // }
+    // } catch (InterruptedException e) {
+    // log.warn("File watching interrupted");
+    // Thread.currentThread().interrupt(); // Reset the interrupted status
+    // }
+    // });
+    // watchThread.start();
+    // logManager.setWatchService(watchService);
+    // logManager.setWatchThread(watchThread);
+    // } catch (IOException e) {
+    // log.error("Error starting file watcher: ", e);
+    // }
+    // }
+
+    // public static void readNewContent(String filePath, LogManager logManager) {
+    // try (SeekableByteChannel channel = Files.newByteChannel(Paths.get(filePath)))
+    // {
+    // channel.position(logManager.getLastReadPosition()); // Move to the last read
+    // position
+    // StringBuilder builder = new StringBuilder();
+    // byte[] buffer = new byte[1024];
+    // int bytesRead;
+    // while ((bytesRead = channel.read(ByteBuffer.wrap(buffer))) != -1) {
+    // builder.append(new String(buffer, 0, bytesRead));
+    // }
+    // if (builder.length() > 0) {
+    // String message = builder.toString();
+    // logManager.getSimpMessagingTemplate().convertAndSend(removeLogSuffix(logManager.getTopic()),
+    // message);
+    // }
+    // logManager.setLastReadPosition(channel.position()); // Update the last read
+    // position
+    // } catch (IOException e) {
+    // log.error("Error reading new content of the file: ", e);
+    // }
+    // }
 
     public static List<String> loadLogsNames(String logsDir) {
         File path = new File(logsDir);
